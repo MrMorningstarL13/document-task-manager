@@ -2,7 +2,6 @@ import { useEffect } from "react"
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router"
 import { useAuthStore } from "./store/authStore"
 import { AppLayout } from "./components/layout/AppLayout"
-import { ProtectedRoute, AdminRoute } from "./components/auth/Guards"
 
 import LoginPage from "./pages/LoginPage"
 import RegisterPage from "./pages/RegisterPage"
@@ -45,11 +44,7 @@ export default function App() {
 
         <Route
           path="/app"
-          element={
-            <ProtectedRoute>
-              <AppLayout />
-            </ProtectedRoute>
-          }
+          element={<AppLayout />}
         >
           <Route index element={<Navigate to="/app/projects" replace />} />
           <Route path="projects" element={<ProjectsPage />} />
@@ -57,22 +52,8 @@ export default function App() {
           <Route path="tasks" element={<TasksPage />} />
           <Route path="documents" element={<DocumentsPage />} />
           <Route path="profile" element={<ProfilePage />} />
-          <Route
-            path="users"
-            element={
-              <AdminRoute>
-                <UsersPage />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="audit-logs"
-            element={
-              <AdminRoute>
-                <AuditLogsPage />
-              </AdminRoute>
-            }
-          />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="audit-logs" element={<AuditLogsPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/app/projects" replace />} />
