@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useAuthStore } from "./store/authStore"
 import { AppLayout } from "./components/layout/AppLayout"
 
@@ -28,6 +29,8 @@ function UnauthorizedListener() {
   return null
 }
 
+const queryClient = new QueryClient()
+
 export default function App() {
   const init = useAuthStore((s) => s.init)
 
@@ -36,28 +39,30 @@ export default function App() {
   }, [init])
 
   return (
-    <BrowserRouter>
-      <UnauthorizedListener />
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <UnauthorizedListener />
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
 
-        <Route
-          path="/app"
-          element={<AppLayout />}
-        >
-          <Route index element={<Navigate to="/app/projects" replace />} />
-          <Route path="projects" element={<ProjectsPage />} />
-          <Route path="projects/:projectId" element={<ProjectDetailPage />} />
-          <Route path="tasks" element={<TasksPage />} />
-          <Route path="documents" element={<DocumentsPage />} />
-          <Route path="profile" element={<ProfilePage />} />
-          <Route path="users" element={<UsersPage />} />
-          <Route path="audit-logs" element={<AuditLogsPage />} />
-        </Route>
+          <Route
+            path="/app"
+            element={<AppLayout />}
+          >
+            <Route index element={<Navigate to="/app/projects" replace />} />
+            <Route path="projects" element={<ProjectsPage />} />
+            <Route path="projects/:projectId" element={<ProjectDetailPage />} />
+            <Route path="tasks" element={<TasksPage />} />
+            <Route path="documents" element={<DocumentsPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="audit-logs" element={<AuditLogsPage />} />
+          </Route>
 
-        <Route path="*" element={<Navigate to="/app/projects" replace />} />
-      </Routes>
-    </BrowserRouter>
+          <Route path="*" element={<Navigate to="/app/projects" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </QueryClientProvider>
   )
 }

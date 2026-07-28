@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Plus, FolderKanban, Search } from "lucide-react"
-import { useProjectStore } from "../store/projectStore"
 import { useAuthStore } from "../store/authStore"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { projectService } from "../lib/services"
 import { PageHeader } from "../components/layout/PageHeader"
 import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Field"
@@ -10,17 +11,38 @@ import { ProjectCard } from "../components/projects/ProjectCard"
 import { ProjectFormModal } from "../components/projects/ProjectFormModal"
 import { cn } from "../lib/utils"
 
+function asArray(res) {
+  if (Array.isArray(res)) return res
+  return res?.data || res?.projects || res?.items || []
+}
+
 export default function ProjectsPage() {
-  const { projects, loading, error, view, setView, fetchAll, fetchMine, create } =
-    useProjectStore()
   const isAdmin = useAuthStore((s) => s.isAdmin())
+  const [view, setView] = useState("my")
   const [modalOpen, setModalOpen] = useState(false)
   const [query, setQuery] = useState("")
+  const queryClient = useQueryClient()
 
-  useEffect(() => {
-    if (view === "all") fetchAll()
-    else fetchMine()
-  }, [view, fetchAll, fetchMine])
+  const { data: projects = [], isLoading, error } = useQuery({
+    queryKey: ["projects", view],
+    queryFn: async () => {
+      const res = view === "all" ? await projectService.list() : await projectService.listMine()
+      return asArray(res)
+    },
+    keepPreviousData: true,
+  })
+
+  const createProject = useMutation({
+    mutationFn: async (payload) => {
+      const res = await projectService.create(payload)
+      return res?.data || res?.project || res
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] })
+    },
+  })
+
+  const create = async (payload) => createProject.mutateAsync(payload)
 
   const tabs = [
     { key: "my", label: "My Projects" },
@@ -72,7 +94,7 @@ export default function ProjectsPage() {
 
       <ErrorBanner message={error} className="mb-4" />
 
-      {loading ? (
+      {isLoading ? (
         <PageLoader />
       ) : filtered.length === 0 ? (
         <EmptyState
