@@ -48,7 +48,7 @@ export default function ProjectDetailPage() {
   const [loading, setLoading] = useState(false)
 
   const project = useMemo(
-    () => projects.find((p) => getId(p) === projectId),
+    () => projects.find((p) => String(getId(p)) === projectId),
     [projects, projectId],
   )
 

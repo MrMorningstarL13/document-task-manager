@@ -16,10 +16,10 @@ export default function TasksPage() {
   }, [fetchMine])
 
   useEffect(() => {
-    if (!projectId && projects.length) setProjectId(getId(projects[0]))
+    if (!projectId && projects.length) setProjectId(String(getId(projects[0])))
   }, [projects, projectId])
 
-  const active = projects.find((p) => getId(p) === projectId)
+  const active = projects.find((p) => String(getId(p)) === projectId)
 
   return (
     <div>
