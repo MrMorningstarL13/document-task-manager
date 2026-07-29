@@ -29,7 +29,13 @@ export const projectService = {
 }
 
 export const taskService = {
-  list: (projectId) => api.get(`/api/projects/${projectId}/tasks`),
+  list: (projectId, { status, priority } = {}) => {
+    const params = new URLSearchParams()
+    if (status) params.append("status", status)
+    if (priority) params.append("priority", priority)
+    const query = params.toString()
+    return api.get(`/api/projects/${projectId}/tasks${query ? `?${query}` : ""}`)
+  },
   listMine: (projectId) => api.get(`/api/projects/${projectId}/tasks/my`),
   create: (projectId, payload) => api.post(`/api/projects/${projectId}/tasks`, payload),
   update: (projectId, taskId, payload) =>

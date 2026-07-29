@@ -1,18 +1,37 @@
 // Central API client. All requests go through here so JWT auth and error
 // handling stay consistent. The base URL defaults to "" so requests hit the
 // same origin (proxied to the backend via vite.config.js during dev). Override
-// with VITE_API_BASE_URL to point at an absolute backend URL.
+// with VITE_API_BASE_URL or VITE_API_URL to point at an absolute backend URL.
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ""
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? import.meta.env.VITE_API_URL ?? "http://localhost:8080"
 const TOKEN_KEY = "hive_token"
 
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))
+  return match ? decodeURIComponent(match[1]) : null
+}
+
+function setCookie(name, value, days = 7) {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString()
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`
+}
+
+function deleteCookie(name) {
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`
+}
+
 export function getToken() {
-  return localStorage.getItem(TOKEN_KEY)
+  return getCookie(TOKEN_KEY)
 }
 
 export function setToken(token) {
-  if (token) localStorage.setItem(TOKEN_KEY, token)
-  else localStorage.removeItem(TOKEN_KEY)
+  if (token) {
+    const value = token.startsWith("Bearer ") ? token : `Bearer ${token}`
+    setCookie(TOKEN_KEY, value)
+  } else {
+    deleteCookie(TOKEN_KEY)
+  }
 }
 
 export class ApiError extends Error {
@@ -33,7 +52,7 @@ async function request(path, { method = "GET", body, headers = {}, raw = false }
     finalHeaders["Content-Type"] = "application/json"
   }
   if (token) {
-    finalHeaders["Authorization"] = `Bearer ${token}`
+    finalHeaders["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`
   }
 
   let res

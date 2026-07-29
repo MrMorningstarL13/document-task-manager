@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react"
+import { useMemo, useState } from "react"
 import { Plus, LayoutGrid, List } from "lucide-react"
-import { useTaskStore } from "../../store/taskStore"
+import { useCreateTask, useDeleteTask, useTaskList, useUpdateTask } from "../../lib/taskHooks"
 import { Button } from "../ui/Button"
 import { Select } from "../ui/Field"
 import { PageLoader, EmptyState, ErrorBanner } from "../ui/Misc"
@@ -12,32 +12,39 @@ import { TASK_STATUSES, TASK_PRIORITIES, label, getId } from "../../lib/entities
 import { cn } from "../../lib/utils"
 
 export function TaskBoard({ projectId, members = [], canManage = true }) {
-  const { tasks, loading, error, filters, setFilters, fetch, create, update, remove } =
-    useTaskStore()
   const [layout, setLayout] = useState("board")
   const [modal, setModal] = useState({ open: false, task: null })
   const [toDelete, setToDelete] = useState(null)
   const [deleting, setDeleting] = useState(false)
+  const [filters, setFilters] = useState({ status: "ALL", priority: "ALL", mine: false })
 
-  useEffect(() => {
-    if (projectId) fetch(projectId)
-  }, [projectId, filters.mine, fetch])
+  const taskList = useTaskList(projectId, filters)
+  const createTask = useCreateTask(projectId)
+  const updateTask = useUpdateTask(projectId)
+  const deleteTask = useDeleteTask(projectId)
 
-  const visible = tasks.filter((t) => {
-    const statusOk = filters.status === "ALL" || t.status === filters.status
-    const prioOk = filters.priority === "ALL" || t.priority === filters.priority
-    return statusOk && prioOk
-  })
+  const visible = useMemo(() => {
+    const tasks = taskList.data || []
+    return tasks.filter((t) => {
+      const statusOk = filters.status === "ALL" || t.status === filters.status
+      const prioOk = filters.priority === "ALL" || t.priority === filters.priority
+      return statusOk && prioOk
+    })
+  }, [taskList.data, filters])
 
   const handleSubmit = async (payload) => {
-    if (modal.task) await update(projectId, getId(modal.task), payload)
-    else await create(projectId, payload)
+    if (modal.task) {
+      await updateTask.mutateAsync({ taskId: getId(modal.task), payload })
+    } else {
+      await createTask.mutateAsync(payload)
+    }
+    setModal({ open: false, task: null })
   }
 
   const confirmDelete = async () => {
     setDeleting(true)
     try {
-      await remove(projectId, getId(toDelete))
+      await deleteTask.mutateAsync(getId(toDelete))
       setToDelete(null)
     } finally {
       setDeleting(false)
@@ -51,7 +58,7 @@ export function TaskBoard({ projectId, members = [], canManage = true }) {
           <Select
             className="w-auto"
             value={filters.status}
-            onChange={(e) => setFilters({ status: e.target.value })}
+            onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
           >
             <option value="ALL">All statuses</option>
             {TASK_STATUSES.map((s) => (
@@ -63,7 +70,7 @@ export function TaskBoard({ projectId, members = [], canManage = true }) {
           <Select
             className="w-auto"
             value={filters.priority}
-            onChange={(e) => setFilters({ priority: e.target.value })}
+            onChange={(e) => setFilters((prev) => ({ ...prev, priority: e.target.value }))}
           >
             <option value="ALL">All priorities</option>
             {TASK_PRIORITIES.map((p) => (
@@ -77,7 +84,7 @@ export function TaskBoard({ projectId, members = [], canManage = true }) {
               type="checkbox"
               className="h-4 w-4 accent-[#f2b705]"
               checked={filters.mine}
-              onChange={(e) => setFilters({ mine: e.target.checked })}
+              onChange={(e) => setFilters((prev) => ({ ...prev, mine: e.target.checked }))}
             />
             Assigned to me
           </label>
@@ -114,9 +121,9 @@ export function TaskBoard({ projectId, members = [], canManage = true }) {
         </div>
       </div>
 
-      <ErrorBanner message={error} className="mb-4" />
+      <ErrorBanner message={taskList.error?.message} className="mb-4" />
 
-      {loading ? (
+      {taskList.isLoading ? (
         <PageLoader />
       ) : visible.length === 0 ? (
         <EmptyState

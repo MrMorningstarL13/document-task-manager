@@ -10,7 +10,7 @@ export const useProjectStore = create((set, get) => ({
   projects: [],
   loading: false,
   error: null,
-  view: "my", // "my" | "all"
+  view: "my",
 
   setView: (view) => set({ view }),
 
