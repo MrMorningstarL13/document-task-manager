@@ -14,7 +14,7 @@ export function toneForStatus(value = "") {
   const v = String(value).toUpperCase()
   if (["ACTIVE", "DONE", "COMPLETED", "OPEN"].includes(v)) return "success"
   if (["IN_PROGRESS", "IN PROGRESS", "PENDING", "REVIEW"].includes(v)) return "info"
-  if (["ON_HOLD", "PAUSED", "TODO", "BACKLOG"].includes(v)) return "warning"
+  if (["ON_HOLD", "PAUSED", "BACKLOG"].includes(v)) return "warning"
   if (["ARCHIVED", "DELETED", "CLOSED", "CANCELLED", "INACTIVE"].includes(v)) return "danger"
   return "neutral"
 }

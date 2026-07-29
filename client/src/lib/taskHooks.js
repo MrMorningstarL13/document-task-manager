@@ -25,7 +25,7 @@ export function useCreateTask(projectId) {
   return useMutation({
     mutationFn: (payload) => taskService.create(projectId, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] })
+      queryClient.invalidateQueries({ queryKey: ["tasks"], exact: false })
     },
   })
 }
@@ -35,7 +35,7 @@ export function useUpdateTask(projectId) {
   return useMutation({
     mutationFn: ({ taskId, payload }) => taskService.update(projectId, taskId, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] })
+      queryClient.invalidateQueries({ queryKey: ["tasks"], exact: false })
     },
   })
 }
@@ -45,7 +45,7 @@ export function useDeleteTask(projectId) {
   return useMutation({
     mutationFn: (taskId) => taskService.remove(projectId, taskId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] })
+      queryClient.invalidateQueries({ queryKey: ["tasks"], exact: false })
     },
   })
 }

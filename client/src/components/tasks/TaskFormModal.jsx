@@ -8,7 +8,7 @@ import { TASK_STATUSES, TASK_PRIORITIES, label, getId, displayName } from "../..
 const empty = {
   title: "",
   description: "",
-  status: "TODO",
+  status: "NEW",
   priority: "MEDIUM",
   deadlineDate: "",
   deadlineTime: "09:00",
@@ -28,7 +28,7 @@ export function TaskFormModal({ open, onClose, onSubmit, initial, members = [], 
           ? {
               title: initial.title || "",
               description: initial.description || "",
-              status: initial.status || "TODO",
+              status: initial.status || "NEW",
               priority: initial.priority || "MEDIUM",
               deadlineDate: initial.deadline ? initial.deadline.slice(0, 10) : "",
               deadlineTime: initial.deadline ? initial.deadline.slice(11, 16) : "09:00",

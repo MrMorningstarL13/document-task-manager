@@ -34,7 +34,7 @@ export function isActiveUser(user) {
 }
 
 export const PROJECT_STATUSES = ["ACTIVE", "ON_HOLD", "COMPLETED", "ARCHIVED"]
-export const TASK_STATUSES = ["TODO", "IN_PROGRESS", "REVIEW", "DONE"]
+export const TASK_STATUSES = ["NEW", "IN_PROGRESS", "DONE"]
 export const TASK_PRIORITIES = ["LOW", "MEDIUM", "HIGH", "URGENT"]
 export const USER_ROLES = ["USER", "ADMIN"]
 

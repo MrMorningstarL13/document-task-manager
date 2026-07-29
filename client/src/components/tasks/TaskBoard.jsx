@@ -134,7 +134,7 @@ export function TaskBoard({ projectId, members = [], canManage = true }) {
       ) : layout === "board" ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {TASK_STATUSES.map((status) => {
-            const items = visible.filter((t) => (t.status || "TODO") === status)
+            const items = visible.filter((t) => String(t.status || "NEW") === status)
             return (
               <div key={status} className="rounded-xl bg-muted/60 p-3">
                 <div className="mb-3 flex items-center justify-between px-1">
