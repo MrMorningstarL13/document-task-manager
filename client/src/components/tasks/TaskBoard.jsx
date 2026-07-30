@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import { Plus, LayoutGrid, List } from "lucide-react"
-import { useCreateTask, useDeleteTask, useTaskList, useUpdateTask } from "../../lib/taskHooks"
+import { useCreateTask, useDeleteTask, useTaskList, useUpdateTask } from "../../hooks/taskHooks"
 import { Button } from "../ui/Button"
 import { Select } from "../ui/Field"
 import { PageLoader, EmptyState, ErrorBanner } from "../ui/Misc"

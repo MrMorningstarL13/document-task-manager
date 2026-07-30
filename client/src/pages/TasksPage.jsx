@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { ListTodo } from "lucide-react"
-import { useProjectStore } from "../store/projectStore"
+import { useProjectList } from "../hooks/projectHooks"
 import { PageHeader } from "../components/layout/PageHeader"
 import { PageLoader, EmptyState } from "../components/ui/Misc"
 import { ProjectPicker } from "../components/projects/ProjectPicker"
@@ -8,12 +8,8 @@ import { TaskBoard } from "../components/tasks/TaskBoard"
 import { getId, memberList } from "../lib/entities"
 
 export default function TasksPage() {
-  const { projects, loading, fetchMine } = useProjectStore()
+  const { data: projects = [], isLoading: loading } = useProjectList("my")
   const [projectId, setProjectId] = useState("")
-
-  useEffect(() => {
-    fetchMine()
-  }, [fetchMine])
 
   useEffect(() => {
     if (!projectId && projects.length) setProjectId(String(getId(projects[0])))

@@ -3,13 +3,13 @@ import { Modal } from "../ui/Modal"
 import { Button } from "../ui/Button"
 import { Field, Input, Select } from "../ui/Field"
 import { ErrorBanner } from "../ui/Misc"
-import { useUserStore } from "../../store/userStore"
+import { useUserList } from "../../hooks/userHooks"
 import { displayName, getId } from "../../lib/entities"
 
 const empty = { userId: "", search: "" }
 
 export function AddMemberModal({ open, onClose, onSubmit }) {
-  const { users, loading: loadingUsers, error: userError, fetchAll } = useUserStore()
+  const { data: users = [], isLoading: loadingUsers, error: userError } = useUserList()
   const [form, setForm] = useState(empty)
   const [errors, setErrors] = useState({})
   const [serverError, setServerError] = useState("")
@@ -20,9 +20,8 @@ export function AddMemberModal({ open, onClose, onSubmit }) {
       setForm(empty)
       setErrors({})
       setServerError("")
-      fetchAll()
     }
-  }, [open, fetchAll])
+  }, [open])
 
   const filteredUsers = useMemo(() => {
     const query = form.search.trim().toLowerCase()

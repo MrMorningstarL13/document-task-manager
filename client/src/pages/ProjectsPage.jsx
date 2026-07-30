@@ -1,8 +1,7 @@
 import { useState } from "react"
 import { Plus, FolderKanban, Search } from "lucide-react"
 import { useAuthStore } from "../store/authStore"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { projectService } from "../lib/services"
+import { useProjectList, useCreateProject } from "../hooks/projectHooks"
 import { PageHeader } from "../components/layout/PageHeader"
 import { Button } from "../components/ui/Button"
 import { Input } from "../components/ui/Field"
@@ -11,36 +10,14 @@ import { ProjectCard } from "../components/projects/ProjectCard"
 import { ProjectFormModal } from "../components/projects/ProjectFormModal"
 import { cn } from "../lib/utils"
 
-function asArray(res) {
-  if (Array.isArray(res)) return res
-  return res?.data || res?.projects || res?.items || []
-}
-
 export default function ProjectsPage() {
   const isAdmin = useAuthStore((s) => s.isAdmin())
   const [view, setView] = useState("my")
   const [modalOpen, setModalOpen] = useState(false)
   const [query, setQuery] = useState("")
-  const queryClient = useQueryClient()
 
-  const { data: projects = [], isLoading, error } = useQuery({
-    queryKey: ["projects", view],
-    queryFn: async () => {
-      const res = view === "all" ? await projectService.list() : await projectService.listMine()
-      return asArray(res)
-    },
-    keepPreviousData: true,
-  })
-
-  const createProject = useMutation({
-    mutationFn: async (payload) => {
-      const res = await projectService.create(payload)
-      return res?.data || res?.project || res
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] })
-    },
-  })
+  const { data: projects = [], isLoading, error } = useProjectList(view)
+  const createProject = useCreateProject()
 
   const create = async (payload) => createProject.mutateAsync(payload)
 

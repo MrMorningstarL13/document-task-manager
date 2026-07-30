@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { taskService } from "./services"
+import { taskService } from "../lib/services"
 
 const taskQueryKey = (projectId, filters) => ["tasks", projectId, filters?.mine, filters?.status, filters?.priority]
 

@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Users as UsersIcon, Search, ScrollText } from "lucide-react"
 import { Link } from "react-router"
-import { useUserStore } from "../store/userStore"
+import { useUserList, useSetUserRole, useDeactivateUser } from "../hooks/userHooks"
 import { PageHeader } from "../components/layout/PageHeader"
 import { PageLoader, EmptyState, ErrorBanner, Avatar } from "../components/ui/Misc"
 import { Card } from "../components/ui/Card"
@@ -12,14 +12,13 @@ import { ConfirmDialog } from "../components/ui/ConfirmDialog"
 import { getId, displayName, isActiveUser, label, USER_ROLES } from "../lib/entities"
 
 export default function UsersPage() {
-  const { users, loading, error, fetchAll, setRole, deactivate } = useUserStore()
+  const { data: users = [], isLoading: loading, error } = useUserList()
+  const setUserRole = useSetUserRole()
+  const deactivateUser = useDeactivateUser()
+
   const [query, setQuery] = useState("")
   const [toDeactivate, setToDeactivate] = useState(null)
   const [working, setWorking] = useState(false)
-
-  useEffect(() => {
-    fetchAll()
-  }, [fetchAll])
 
   const filtered = users.filter((u) => {
     const q = query.toLowerCase()
@@ -32,7 +31,7 @@ export default function UsersPage() {
   const confirmDeactivate = async () => {
     setWorking(true)
     try {
-      await deactivate(getId(toDeactivate))
+      await deactivateUser.mutateAsync(getId(toDeactivate))
       setToDeactivate(null)
     } finally {
       setWorking(false)
@@ -95,7 +94,7 @@ export default function UsersPage() {
                     <Select
                       className="w-36"
                       value={u.role || "USER"}
-                      onChange={(e) => setRole(id, e.target.value)}
+                      onChange={(e) => setUserRole.mutateAsync({ id, role: e.target.value })}
                       disabled={!active}
                     >
                       {USER_ROLES.map((r) => (

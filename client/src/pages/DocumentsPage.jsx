@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { FileText } from "lucide-react"
-import { useProjectStore } from "../store/projectStore"
+import { useProjectList } from "../hooks/projectHooks"
 import { PageHeader } from "../components/layout/PageHeader"
 import { PageLoader, EmptyState } from "../components/ui/Misc"
 import { ProjectPicker } from "../components/projects/ProjectPicker"
@@ -8,12 +8,8 @@ import { DocumentPanel } from "../components/documents/DocumentPanel"
 import { getId } from "../lib/entities"
 
 export default function DocumentsPage() {
-  const { projects, loading, fetchMine } = useProjectStore()
+  const { data: projects = [], isLoading: loading } = useProjectList("my")
   const [projectId, setProjectId] = useState("")
-
-  useEffect(() => {
-    fetchMine()
-  }, [fetchMine])
 
   useEffect(() => {
     if (!projectId && projects.length) setProjectId(getId(projects[0]))

@@ -9,8 +9,12 @@ import {
   ListTodo,
   FileText,
 } from "lucide-react"
-import { useProjectStore } from "../store/projectStore"
-import { useDocumentStore } from "../store/documentStore"
+import {
+  useProjectList,
+  useUpdateProject,
+  useDeleteProject,
+  useAddProjectMember,
+} from "../hooks/projectHooks"
 import { PageLoader, EmptyState, ErrorBanner, Avatar } from "../components/ui/Misc"
 import { Button } from "../components/ui/Button"
 import { Card } from "../components/ui/Card"
@@ -39,37 +43,33 @@ const TABS = [
 export default function ProjectDetailPage() {
   const { projectId } = useParams()
   const navigate = useNavigate()
-  const { projects, fetchMine, update, remove, addMember } = useProjectStore()
+  const { data: projects = [], isLoading } = useProjectList("my")
+  const updateProject = useUpdateProject()
+  const deleteProject = useDeleteProject()
+  const addProjectMember = useAddProjectMember(projectId)
+
   const [tab, setTab] = useState("tasks")
   const [editOpen, setEditOpen] = useState(false)
   const [memberOpen, setMemberOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [loading, setLoading] = useState(false)
 
   const project = useMemo(
     () => projects.find((p) => String(getId(p)) === projectId),
     [projects, projectId],
   )
 
-  useEffect(() => {
-    if (!project) {
-      setLoading(true)
-      fetchMine().finally(() => setLoading(false))
-    }
-  }, [project, fetchMine])
-
   const handleDelete = async () => {
     setDeleting(true)
     try {
-      await remove(projectId)
+      await deleteProject.mutateAsync(projectId)
       navigate("/app/projects", { replace: true })
     } finally {
       setDeleting(false)
     }
   }
 
-  if (loading && !project) return <PageLoader />
+  if (isLoading && !project) return <PageLoader />
 
   if (!project) {
     return (
@@ -157,7 +157,7 @@ export default function ProjectDetailPage() {
       <ProjectFormModal
         open={editOpen}
         onClose={() => setEditOpen(false)}
-        onSubmit={(payload) => update(projectId, payload)}
+        onSubmit={(payload) => updateProject.mutateAsync({ projectId, payload })}
         initial={project}
         mode="edit"
       />
@@ -165,7 +165,7 @@ export default function ProjectDetailPage() {
       <AddMemberModal
         open={memberOpen}
         onClose={() => setMemberOpen(false)}
-        onSubmit={(payload) => addMember(projectId, payload)}
+        onSubmit={(payload) => addProjectMember.mutateAsync(payload)}
       />
 
       <ConfirmDialog

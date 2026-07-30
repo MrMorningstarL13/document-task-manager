@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { ScrollText, Search } from "lucide-react"
-import { useAuditStore } from "../store/auditStore"
+import { useAuditLogList } from "../hooks/auditHooks"
 import { PageHeader } from "../components/layout/PageHeader"
 import { PageLoader, EmptyState, ErrorBanner, Avatar } from "../components/ui/Misc"
 import { Card } from "../components/ui/Card"
@@ -20,12 +20,9 @@ function actionOf(log) {
 }
 
 export default function AuditLogsPage() {
-  const { logs, loading, error, actionFilter, setActionFilter, fetchAll } = useAuditStore()
+  const { data: logs = [], isLoading: loading, error } = useAuditLogList()
+  const [actionFilter, setActionFilter] = useState("ALL")
   const [query, setQuery] = useState("")
-
-  useEffect(() => {
-    fetchAll()
-  }, [fetchAll])
 
   const actions = useMemo(() => {
     const set = new Set(logs.map(actionOf).filter(Boolean))

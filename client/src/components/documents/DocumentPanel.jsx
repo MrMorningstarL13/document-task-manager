@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react"
 import { Upload, FileText, Download, Trash2, File } from "lucide-react"
-import { useDocumentStore } from "../../store/documentStore"
+import {
+  useDocumentList,
+  useUploadDocument,
+  useDeleteDocument,
+  useDownloadDocument,
+} from "../../hooks/documentHooks"
 import { Button } from "../ui/Button"
 import { Card } from "../ui/Card"
 import { PageLoader, EmptyState, ErrorBanner } from "../ui/Misc"
@@ -24,17 +29,17 @@ const ALLOWED = [
 ]
 
 export function DocumentPanel({ projectId }) {
-  const { documents, loading, error, fetch, upload, remove, download } = useDocumentStore()
+  const { data: documents = [], isLoading: loading, error } = useDocumentList(projectId)
+  const uploadDoc = useUploadDocument(projectId)
+  const deleteDoc = useDeleteDocument(projectId)
+  const downloadDoc = useDownloadDocument(projectId)
+
   const inputRef = useRef(null)
   const [uploadError, setUploadError] = useState("")
   const [uploading, setUploading] = useState(false)
   const [dragActive, setDragActive] = useState(false)
   const [toDelete, setToDelete] = useState(null)
   const [deleting, setDeleting] = useState(false)
-
-  useEffect(() => {
-    if (projectId) fetch(projectId)
-  }, [projectId, fetch])
 
   const validate = (file) => {
     if (file.size > MAX_BYTES) return `"${file.name}" is larger than 10 MB.`
@@ -54,7 +59,7 @@ export function DocumentPanel({ projectId }) {
     setUploadError("")
     setUploading(true)
     try {
-      await upload(projectId, file)
+      await uploadDoc.mutateAsync(file)
     } catch (e) {
       setUploadError(e.message)
     } finally {
@@ -66,7 +71,7 @@ export function DocumentPanel({ projectId }) {
   const confirmDelete = async () => {
     setDeleting(true)
     try {
-      await remove(projectId, getId(toDelete))
+      await deleteDoc.mutateAsync(getId(toDelete))
       setToDelete(null)
     } finally {
       setDeleting(false)
@@ -148,7 +153,7 @@ export function DocumentPanel({ projectId }) {
               </div>
               <div className="flex shrink-0 items-center gap-1">
                 <button
-                  onClick={() => download(projectId, doc)}
+                  onClick={() => downloadDoc.mutateAsync(doc)}
                   className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
                   aria-label="Download document"
                 >
