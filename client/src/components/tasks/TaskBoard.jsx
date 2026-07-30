@@ -11,12 +11,12 @@ import { ConfirmDialog } from "../ui/ConfirmDialog"
 import { TASK_STATUSES, TASK_PRIORITIES, label, getId } from "../../lib/entities"
 import { cn } from "../../lib/utils"
 
-export function TaskBoard({ projectId, members = [], canManage = true }) {
+export function TaskBoard({ projectId, members = [], canManage = true, initialMine = false }) {
   const [layout, setLayout] = useState("board")
   const [modal, setModal] = useState({ open: false, task: null })
   const [toDelete, setToDelete] = useState(null)
   const [deleting, setDeleting] = useState(false)
-  const [filters, setFilters] = useState({ status: "ALL", priority: "ALL", mine: false })
+  const [filters, setFilters] = useState({ status: "ALL", priority: "ALL", mine: initialMine })
 
   const taskList = useTaskList(projectId, filters)
   const createTask = useCreateTask(projectId)

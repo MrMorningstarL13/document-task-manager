@@ -43,7 +43,7 @@ export default function TasksPage() {
           description="Create a project first to start adding tasks."
         />
       ) : active ? (
-        <TaskBoard projectId={projectId} members={memberList(active)} />
+        <TaskBoard projectId={projectId} members={memberList(active)} initialMine={true} />
       ) : null}
     </div>
   )

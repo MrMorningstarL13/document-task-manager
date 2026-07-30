@@ -3,8 +3,7 @@
 // same origin (proxied to the backend via vite.config.js during dev). Override
 // with VITE_API_BASE_URL or VITE_API_URL to point at an absolute backend URL.
 
-const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? import.meta.env.VITE_API_URL ?? "http://localhost:8080"
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? import.meta.env.VITE_API_URL ?? "http://localhost:8080"
 const TOKEN_KEY = "hive_token"
 
 function getCookie(name) {

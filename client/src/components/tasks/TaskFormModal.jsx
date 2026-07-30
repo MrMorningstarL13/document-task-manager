@@ -33,7 +33,7 @@ export function TaskFormModal({ open, onClose, onSubmit, initial, members = [], 
               deadlineDate: initial.deadline ? initial.deadline.slice(0, 10) : "",
               deadlineTime: initial.deadline ? initial.deadline.slice(11, 16) : "09:00",
               assigneeId:
-                initial.assigneeId || getId(initial.assignee) || "",
+                initial.assignedTo?.id || getId(initial.assignedTo) || getId(initial.assignee) || "",
             }
           : empty,
       )
@@ -65,8 +65,10 @@ export function TaskFormModal({ open, onClose, onSubmit, initial, members = [], 
       const payload = {
         ...form,
         deadline: buildDeadline(),
+        assignedToId: form.assigneeId ? Number(form.assigneeId) : undefined,
       }
-      if (!payload.assigneeId) delete payload.assigneeId
+      if (!payload.assignedToId) delete payload.assignedToId
+      delete payload.assigneeId
       delete payload.deadlineDate
       delete payload.deadlineTime
       await onSubmit(payload)

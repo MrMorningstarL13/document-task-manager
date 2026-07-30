@@ -3,7 +3,6 @@ import {
   Hexagon,
   LayoutGrid,
   CheckSquare,
-  FileText,
   Users,
   ScrollText,
   X,
@@ -14,7 +13,6 @@ import { cn } from "../../lib/utils"
 const nav = [
   { to: "/app/projects", label: "Projects", icon: LayoutGrid },
   { to: "/app/tasks", label: "My Tasks", icon: CheckSquare },
-  { to: "/app/documents", label: "Documents", icon: FileText },
 ]
 
 const adminNav = [

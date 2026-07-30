@@ -23,7 +23,7 @@ export function memberList(project) {
 }
 
 export function displayName(user) {
-  return user?.name || user?.fullName || user?.username || user?.email || "Unknown"
+  return user?.firstName || user?.lastName || user?.username || user?.email || "Unknown"
 }
 
 export function isActiveUser(user) {
