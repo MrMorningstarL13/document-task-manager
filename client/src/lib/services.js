@@ -55,6 +55,15 @@ export const documentService = {
 }
 
 export const auditService = {
-  list: () => api.get("/api/admin/audit-logs"),
-  byUser: (userId) => api.get(`/api/admin/audit-logs/users/${userId}`),
+  list: ({ page = 0, size = 20, action, search } = {}) => {
+    const params = new URLSearchParams({ page, size })
+    if (action && action !== "ALL") params.append("action", action)
+    if (search) params.append("search", search)
+    return api.get(`/api/admin/audit-logs?${params.toString()}`)
+  },
+  byUser: (userId, { page = 0, size = 20 } = {}) => {
+    const params = new URLSearchParams({ page, size })
+    return api.get(`/api/admin/audit-logs/users/${userId}?${params.toString()}`)
+  },
+  actions: () => api.get("/api/admin/audit-logs/actions"),
 }

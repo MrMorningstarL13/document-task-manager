@@ -1,11 +1,12 @@
-import { useMemo, useState } from "react"
-import { ScrollText, Search } from "lucide-react"
-import { useAuditLogList } from "../hooks/auditHooks"
+import { useEffect, useMemo, useState } from "react"
+import { ScrollText, Search, ChevronLeft, ChevronRight } from "lucide-react"
+import { useAuditLogList, useAuditLogActions } from "../hooks/auditHooks"
 import { PageHeader } from "../components/layout/PageHeader"
 import { PageLoader, EmptyState, ErrorBanner, Avatar } from "../components/ui/Misc"
 import { Card } from "../components/ui/Card"
 import { Badge, toneForStatus } from "../components/ui/Badge"
 import { Select, Input } from "../components/ui/Field"
+import { Button } from "../components/ui/Button"
 import { getId, displayName, label } from "../lib/entities"
 import { formatDateTime } from "../lib/utils"
 
@@ -20,25 +21,35 @@ function actionOf(log) {
 }
 
 export default function AuditLogsPage() {
-  const { data: logs = [], isLoading: loading, error } = useAuditLogList()
+  const [page, setPage] = useState(0)
   const [actionFilter, setActionFilter] = useState("ALL")
   const [query, setQuery] = useState("")
+  const [debouncedQuery, setDebouncedQuery] = useState("")
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query), 300)
+    return () => clearTimeout(t)
+  }, [query])
+
+  useEffect(() => {
+    // Reset to page 0 when filters change
+    setPage(0)
+  }, [actionFilter, debouncedQuery])
+
+  const { data = {}, isLoading: loading, error } = useAuditLogList({ 
+    page, 
+    size: 20, 
+    action: actionFilter, 
+    search: debouncedQuery 
+  })
+  
+  const { data: serverActions = [] } = useAuditLogActions()
+
+  const { items: logs = [], pageNumber = 0, totalPages = 0 } = data
 
   const actions = useMemo(() => {
-    const set = new Set(logs.map(actionOf).filter(Boolean))
-    return ["ALL", ...Array.from(set)]
-  }, [logs])
-
-  const filtered = logs.filter((log) => {
-    const actionOk = actionFilter === "ALL" || actionOf(log) === actionFilter
-    const q = query.toLowerCase()
-    const searchOk =
-      !q ||
-      actorName(log).toLowerCase().includes(q) ||
-      actionOf(log).toLowerCase().includes(q) ||
-      JSON.stringify(log.details || log.metadata || {}).toLowerCase().includes(q)
-    return actionOk && searchOk
-  })
+    return ["ALL", ...serverActions]
+  }, [serverActions])
 
   return (
     <div>
@@ -71,42 +82,71 @@ export default function AuditLogsPage() {
 
       {loading ? (
         <PageLoader />
-      ) : filtered.length === 0 ? (
+      ) : logs.length === 0 ? (
         <EmptyState
           icon={ScrollText}
           title="No audit logs"
           description="Activity across the workspace will appear here."
         />
       ) : (
-        <Card className="overflow-hidden">
-          <ul className="divide-y divide-border">
-            {filtered.map((log, i) => {
-              const details = log.details || log.description || log.message
-              return (
-                <li key={getId(log) || i} className="flex items-start gap-3 px-5 py-4">
-                  <Avatar name={actorName(log)} size="sm" />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-medium text-foreground">
-                        {actorName(log)}
-                      </span>
-                      <Badge tone={toneForStatus(actionOf(log))}>{label(actionOf(log))}</Badge>
+        <div className="space-y-4">
+          <Card className="overflow-hidden">
+            <ul className="divide-y divide-border">
+              {logs.map((log, i) => {
+                const details = log.details || log.description || log.message
+                return (
+                  <li key={getId(log) || i} className="flex items-start gap-3 px-5 py-4">
+                    <Avatar name={actorName(log)} size="sm" />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-sm font-medium text-foreground">
+                          {actorName(log)}
+                        </span>
+                        <Badge tone={toneForStatus(actionOf(log))}>{label(actionOf(log))}</Badge>
+                      </div>
+                      {details && (
+                        <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                          {typeof details === "string" ? details : JSON.stringify(details)}
+                        </p>
+                      )}
                     </div>
-                    {details && (
-                      <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                        {typeof details === "string" ? details : JSON.stringify(details)}
-                      </p>
-                    )}
-                  </div>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    {formatDateTime(log.createdAt || log.timestamp || log.date)}
-                  </span>
-                </li>
-              )
-            })}
-          </ul>
-        </Card>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {formatDateTime(log.createdAt || log.timestamp || log.date)}
+                    </span>
+                  </li>
+                )
+              })}
+            </ul>
+          </Card>
+          
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-border pt-4">
+              <span className="text-sm text-muted-foreground">
+                Page {pageNumber + 1} of {totalPages}
+              </span>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  disabled={pageNumber === 0} 
+                  onClick={() => setPage(p => Math.max(0, p - 1))}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  disabled={pageNumber >= totalPages - 1} 
+                  onClick={() => setPage(p => p + 1)}
+                >
+                  Next <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       )}
     </div>
   )
 }
+

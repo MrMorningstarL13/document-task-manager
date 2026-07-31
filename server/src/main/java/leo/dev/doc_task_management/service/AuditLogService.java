@@ -5,10 +5,12 @@ import leo.dev.doc_task_management.entity.AuditLog;
 import leo.dev.doc_task_management.entity.User;
 import leo.dev.doc_task_management.repository.AuditLogRepository;
 import lombok.RequiredArgsConstructor;
+import leo.dev.doc_task_management.dto.response.PageResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -29,24 +31,19 @@ public class AuditLogService {
         auditLogRepository.save(auditLog);
     }
 
-    public List<AuditLogResponse> getAllLogs() {
-        return auditLogRepository.findAll()
-                .stream()
-                .map(AuditLogResponse::fromEntity)
-                .toList();
+    public PageResponse<AuditLogResponse> getLogsWithFilters(String action, String search, Pageable pageable) {
+        Page<AuditLogResponse> page = auditLogRepository.findWithFilters(action, search, pageable)
+                .map(AuditLogResponse::fromEntity);
+        return PageResponse.of(page);
     }
 
-    public List<AuditLogResponse> getLogsByAction(String action) {
-        return auditLogRepository.findAllByAction(action)
-                .stream()
-                .map(AuditLogResponse::fromEntity)
-                .toList();
+    public PageResponse<AuditLogResponse> getLogsByUser(Long userId, Pageable pageable) {
+        Page<AuditLogResponse> page = auditLogRepository.findAllByUserId(userId, pageable)
+                .map(AuditLogResponse::fromEntity);
+        return PageResponse.of(page);
     }
 
-    public List<AuditLogResponse> getLogsByUser(Long userId) {
-        return auditLogRepository.findAllByUserId(userId)
-                .stream()
-                .map(AuditLogResponse::fromEntity)
-                .toList();
+    public java.util.List<String> getDistinctActions() {
+        return auditLogRepository.findDistinctActions();
     }
 }
