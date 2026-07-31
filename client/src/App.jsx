@@ -30,7 +30,9 @@ function UnauthorizedListener() {
   return null
 }
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  staleTime: 5 * 60 * 1000
+})
 
 export default function App() {
   const init = useAuthStore((s) => s.init)

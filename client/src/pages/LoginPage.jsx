@@ -13,8 +13,6 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" })
   const [touched, setTouched] = useState(false)
 
-  const from = location.state?.from || "/app/projects"
-
   const validate = () => {
     const errs = {}
     if (!form.email) errs.email = "Email is required"
@@ -29,7 +27,7 @@ export default function LoginPage() {
     setTouched(true)
     if (Object.keys(errs).length) return
     const ok = await login(form)
-    if (ok) navigate(from, { replace: true })
+    if (ok) navigate("/app", { replace: true })
   }
 
   const update = (key) => (e) => {

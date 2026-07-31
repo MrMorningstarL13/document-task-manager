@@ -1,6 +1,5 @@
 import { useState } from "react"
-import { Users as UsersIcon, Search, ScrollText } from "lucide-react"
-import { Link } from "react-router"
+import { Users as UsersIcon, Search } from "lucide-react"
 import { useUserList, useSetUserRole, useDeactivateUser } from "../hooks/userHooks"
 import { PageHeader } from "../components/layout/PageHeader"
 import { PageLoader, EmptyState, ErrorBanner, Avatar } from "../components/ui/Misc"
@@ -40,11 +39,7 @@ export default function UsersPage() {
 
   return (
     <div>
-      <PageHeader title="Users" description="Manage team members, roles, and access.">
-        <Button as={Link} to="/app/audit-logs" variant="secondary">
-          <ScrollText className="h-4 w-4" /> Audit logs
-        </Button>
-      </PageHeader>
+      <PageHeader title="Users" description="Manage team members, roles, and access." />
 
       <div className="mb-5 sm:w-72">
         <div className="relative">

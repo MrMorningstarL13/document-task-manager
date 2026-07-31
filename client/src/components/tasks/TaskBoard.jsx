@@ -26,11 +26,13 @@ export function TaskBoard({ projectId, members = [], canManage = true, initialMi
   const visible = useMemo(() => {
     const tasks = taskList.data || []
     return tasks.filter((t) => {
+      const taskProjectId = t.projectId || t.project?.id || t.project
+      const projectMatch = !projectId || !taskProjectId || String(taskProjectId) === String(projectId)
       const statusOk = filters.status === "ALL" || t.status === filters.status
       const prioOk = filters.priority === "ALL" || t.priority === filters.priority
-      return statusOk && prioOk
+      return projectMatch && statusOk && prioOk
     })
-  }, [taskList.data, filters])
+  }, [taskList.data, filters, projectId])
 
   const handleSubmit = async (payload) => {
     if (modal.task) {
